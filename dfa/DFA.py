@@ -7,18 +7,16 @@ class DFA(object):
         if final_states is None or len(final_states) == 0:
             raise Exception("end states is not specified")
 
-        self.states = transitions.keys()
+        self.states = list(transitions.keys())
         self.transitions = transitions
         self.final_states = final_states
         self.start_state = start_state
-        self.__way = list()
-        self.__line = ''
 
     def read_input(self, line):
-        self.__line = line
-        self.__way.append((self.start_state, self.__line))
-        self.__simulation()
-        return self.__way
+        way = list()
+        way.append((self.start_state, line))
+        self.__simulation(line, way)
+        return way
 
     # таблица перееходов
     # первый столбец - состояния, первая строка - символы
@@ -38,23 +36,23 @@ class DFA(object):
                 label = "-"
             elif i == self.start_state:
                 label = "+"
-            row = [label + i] + ([0] * len(all_sybols))
+            row = [label + i] + (['0'] * len(all_sybols))
 
             for j in self.transitions[i].keys():
                 row[all_sybols.index(j) + 1] = self.transitions[i][j]
             table.append(row)
         return table
 
-    def __simulation(self):
+    def __simulation(self, line, way):
         state = self.start_state
-        for i in range(len(self.__line)):
-            if self.transitions[state].get(self.__line[i]) is not None:
-                state = self.transitions[state][self.__line[i]]
-                self.__way.append((state, self.__line[i + 1:]))
+        for i in range(len(line)):
+            if self.transitions[state].get(line[i]) is not None:
+                state = self.transitions[state][line[i]]
+                way.append((state, line[i + 1:]))
             else:
-                self.__way.append(False)
+                way.append(False)
                 return
-        self.__way.append(state in self.final_states)
+        way.append(state in self.final_states)
 
     @staticmethod
     def table_parse(table):
@@ -65,7 +63,7 @@ class DFA(object):
         for i in table[1:]:
             transition = dict()
             for j in range(1, len(i)):
-                if i[j] != 0:
+                if i[j] != '0':
                     transition[table[0][j]] = i[j]
             if i[0][0] == "-":
                 final_states.append(i[0][1:])
